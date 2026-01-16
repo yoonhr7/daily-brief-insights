@@ -11,21 +11,21 @@
 import type { NewsRepository, InsightRepository, NotificationService } from '../domain/shared/repositories.js';
 import type { Domain, NewsArticle } from '../domain/shared/types.js';
 import type { Insight } from '../domain/shared/insight.js';
-import { LLMEconomyAnalyzer } from './analyzers/LLMEconomyAnalyzer.js';
-import { LLMITAnalyzer } from './analyzers/LLMITAnalyzer.js';
+import { OpenAIEconomyAnalyzer } from './analyzers/OpenAIEconomyAnalyzer.js';
+import { OpenAIITAnalyzer } from './analyzers/OpenAIITAnalyzer.js';
 
 export class AnalyzeNewsUseCase {
-  private geminiApiKey: string;
+  private openaiApiKey: string;
 
   constructor(
     private newsRepository: NewsRepository,
     private insightRepository: InsightRepository,
     private notificationService: NotificationService,
-    geminiApiKey?: string
+    openaiApiKey?: string
   ) {
-    this.geminiApiKey = geminiApiKey || process.env.GEMINI_API_KEY || '';
-    if (!this.geminiApiKey) {
-      throw new Error('GEMINI_API_KEY must be set');
+    this.openaiApiKey = openaiApiKey || process.env.OPENAI_API_KEY || '';
+    if (!this.openaiApiKey) {
+      throw new Error('OPENAI_API_KEY must be set');
     }
   }
 
@@ -78,17 +78,17 @@ export class AnalyzeNewsUseCase {
 
   /**
    * Analyze articles and generate insights
-   * Uses LLM-based analyzers with Gemini
+   * Uses LLM-based analyzers with OpenAI GPT-4o-mini
    */
   private async analyzeArticles(
     articles: NewsArticle[],
     domain: Domain
   ): Promise<Insight[]> {
     if (domain === 'economy') {
-      const analyzer = new LLMEconomyAnalyzer(this.geminiApiKey);
+      const analyzer = new OpenAIEconomyAnalyzer(this.openaiApiKey);
       return analyzer.analyze(articles);
     } else {
-      const analyzer = new LLMITAnalyzer(this.geminiApiKey);
+      const analyzer = new OpenAIITAnalyzer(this.openaiApiKey);
       return analyzer.analyze(articles);
     }
   }

@@ -49,8 +49,8 @@ jobs:
                   NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
                   NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
 
-                  # Gemini API Configuration
-                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+                  # OpenAI API Configuration
+                  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
                   # Schedule (not used in GitHub Actions but required by app)
                   MORNING_SCHEDULE: "0 8 * * *"

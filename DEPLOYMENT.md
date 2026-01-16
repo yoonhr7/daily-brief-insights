@@ -49,11 +49,11 @@ git push -u origin main
 -   `NAVER_CLIENT_ID`: Client ID
 -   `NAVER_CLIENT_SECRET`: Client Secret
 
-#### Gemini API
+#### OpenAI API
 
--   [설정 가이드](./GEMINI_SETUP.md) 참고
--   [AI Studio](https://aistudio.google.com/app/apikey)에서 발급
--   `GEMINI_API_KEY`: API Key
+-   [OpenAI Platform](https://platform.openai.com/api-keys)에서 API 키 발급
+-   `OPENAI_API_KEY`: API Key
+-   모델: GPT-4o-mini (자동 사용)
 
 ## 🔐 GitHub Secrets 설정
 
@@ -77,7 +77,7 @@ GitHub Repository에서 환경 변수를 Secrets로 등록해야 합니다.
 | `KAKAO_ACCESS_TOKEN`  | Kakao 액세스 토큰        | `your_kakao_access_token`  |
 | `NAVER_CLIENT_ID`     | Naver Client ID          | `your_naver_client_id`     |
 | `NAVER_CLIENT_SECRET` | Naver Client Secret      | `your_naver_client_secret` |
-| `GEMINI_API_KEY`      | Google Gemini API Key    | `your_gemini_api_key_here` |
+| `OPENAI_API_KEY`      | OpenAI API Key           | `your_openai_api_key`      |
 
 ### Secrets 추가 화면
 
@@ -231,5 +231,5 @@ schedule:
 
 -   [Notion 설정 가이드](./NOTION_SETUP.md)
 -   [Kakao API 설정 가이드](./KAKAO_API_SETUP.md)
--   [Gemini API 설정 가이드](./GEMINI_SETUP.md)
+-   [OpenAI API 설정 가이드](./OPENAI_SETUP.md)
 -   [테스트 가이드](./TEST.md)

@@ -31,12 +31,12 @@ async function main() {
     const notificationService = KakaoNotificationService.fromEnv();
 
     // Initialize application service
-    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const openaiApiKey = process.env.OPENAI_API_KEY;
     const dailyBriefService = new DailyBriefService(
       newsRepository,
       insightRepository,
       notificationService,
-      geminiApiKey
+      openaiApiKey
     );
 
     // Initialize scheduler
