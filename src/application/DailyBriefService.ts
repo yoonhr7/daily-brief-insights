@@ -13,12 +13,14 @@ export class DailyBriefService {
   constructor(
     newsRepository: NewsRepository,
     insightRepository: InsightRepository,
-    notificationService: NotificationService
+    notificationService: NotificationService,
+    geminiApiKey?: string
   ) {
     this.analyzeNewsUseCase = new AnalyzeNewsUseCase(
       newsRepository,
       insightRepository,
-      notificationService
+      notificationService,
+      geminiApiKey
     );
   }
 

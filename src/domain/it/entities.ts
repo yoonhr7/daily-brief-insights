@@ -8,6 +8,7 @@ import type { Priority, InsightStatus } from '../shared/types.js';
 export type CreateITInsightParams = {
   title: string;
   summary: string;
+  easyExplanation?: string;
   data: ITInsightData;
   priority?: Priority;
   tags?: string[];
@@ -18,18 +19,27 @@ export type CreateITInsightParams = {
  * Factory function to create IT Insight
  */
 export function createITInsight(params: CreateITInsightParams): ITInsight {
-  return {
+  const baseInsight = {
     id: generateId(),
-    domain: 'it',
+    domain: 'it' as const,
     title: params.title,
     summary: params.summary,
     data: params.data,
     analysisDate: new Date(),
-    status: 'draft',
+    status: 'draft' as const,
     priority: params.priority ?? 'medium',
     tags: params.tags ?? [],
     sourceUrls: params.sourceUrls ?? [],
   };
+
+  if (params.easyExplanation) {
+    return {
+      ...baseInsight,
+      easyExplanation: params.easyExplanation,
+    };
+  }
+
+  return baseInsight;
 }
 
 /**

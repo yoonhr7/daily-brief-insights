@@ -4,6 +4,7 @@
  * Initializes the application and starts the scheduler
  */
 
+import 'dotenv/config';
 import { DailyBriefService } from './application/DailyBriefService.js';
 import { DailyBriefScheduler } from './jobs/scheduler.js';
 import { GoogleNewsRepository } from './infrastructure/google/GoogleNewsRepository.js';
@@ -30,10 +31,12 @@ async function main() {
     const notificationService = KakaoNotificationService.fromEnv();
 
     // Initialize application service
+    const geminiApiKey = process.env.GEMINI_API_KEY;
     const dailyBriefService = new DailyBriefService(
       newsRepository,
       insightRepository,
-      notificationService
+      notificationService,
+      geminiApiKey
     );
 
     // Initialize scheduler

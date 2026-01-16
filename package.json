@@ -9,7 +9,9 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "test:notion": "npm run build && node test-notion.js",
+    "test:news": "npm run build && node test-with-news.js"
   },
   "keywords": [
     "analysis",
@@ -30,7 +32,9 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@notionhq/client": "^2.2.14",
+    "dotenv": "^16.6.1",
     "node-cron": "^3.0.3",
     "rss-parser": "^3.13.0"
   },

@@ -8,6 +8,7 @@ import type { Priority, InsightStatus } from '../shared/types.js';
 export type CreateEconomyInsightParams = {
   title: string;
   summary: string;
+  easyExplanation?: string;
   data: EconomyInsightData;
   priority?: Priority;
   tags?: string[];
@@ -20,18 +21,27 @@ export type CreateEconomyInsightParams = {
 export function createEconomyInsight(
   params: CreateEconomyInsightParams
 ): EconomyInsight {
-  return {
+  const baseInsight = {
     id: generateId(),
-    domain: 'economy',
+    domain: 'economy' as const,
     title: params.title,
     summary: params.summary,
     data: params.data,
     analysisDate: new Date(),
-    status: 'draft',
+    status: 'draft' as const,
     priority: params.priority ?? 'medium',
     tags: params.tags ?? [],
     sourceUrls: params.sourceUrls ?? [],
   };
+
+  if (params.easyExplanation) {
+    return {
+      ...baseInsight,
+      easyExplanation: params.easyExplanation,
+    };
+  }
+
+  return baseInsight;
 }
 
 /**

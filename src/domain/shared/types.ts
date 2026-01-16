@@ -17,6 +17,7 @@ export type BaseInsight = {
   domain: Domain;
   title: string;
   summary: string;
+  easyExplanation?: string; // 💡 쉽게 이해하기 섹션
   analysisDate: Date;
   status: InsightStatus;
   priority: Priority;

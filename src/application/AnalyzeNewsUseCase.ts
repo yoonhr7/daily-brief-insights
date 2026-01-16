@@ -9,15 +9,25 @@
  */
 
 import type { NewsRepository, InsightRepository, NotificationService } from '../domain/shared/repositories.js';
-import type { Domain } from '../domain/shared/types.js';
+import type { Domain, NewsArticle } from '../domain/shared/types.js';
 import type { Insight } from '../domain/shared/insight.js';
+import { LLMEconomyAnalyzer } from './analyzers/LLMEconomyAnalyzer.js';
+import { LLMITAnalyzer } from './analyzers/LLMITAnalyzer.js';
 
 export class AnalyzeNewsUseCase {
+  private geminiApiKey: string;
+
   constructor(
     private newsRepository: NewsRepository,
     private insightRepository: InsightRepository,
-    private notificationService: NotificationService
-  ) {}
+    private notificationService: NotificationService,
+    geminiApiKey?: string
+  ) {
+    this.geminiApiKey = geminiApiKey || process.env.GEMINI_API_KEY || '';
+    if (!this.geminiApiKey) {
+      throw new Error('GEMINI_API_KEY must be set');
+    }
+  }
 
   async execute(domain: Domain): Promise<void> {
     console.log(`[${domain}] Starting analysis...`);
@@ -43,8 +53,19 @@ export class AnalyzeNewsUseCase {
     }
 
     // Step 3: Save insights to Notion
-    for (const insight of insights) {
-      await this.insightRepository.save(insight);
+    console.log(`[${domain}] Attempting to save ${insights.length} insights to Notion...`);
+    for (let i = 0; i < insights.length; i++) {
+      const insight = insights[i];
+      if (!insight) continue;
+
+      console.log(`[${domain}] Saving insight ${i + 1}/${insights.length}: ${insight.title}`);
+      try {
+        await this.insightRepository.save(insight);
+        console.log(`[${domain}] ✓ Successfully saved insight ${i + 1}`);
+      } catch (error) {
+        console.error(`[${domain}] ✗ Failed to save insight ${i + 1}:`, error);
+        throw error;
+      }
     }
     console.log(`[${domain}] Saved ${insights.length} insights to Notion`);
 
@@ -57,20 +78,18 @@ export class AnalyzeNewsUseCase {
 
   /**
    * Analyze articles and generate insights
-   * TODO: Implement actual analysis logic with LLM or rule-based system
+   * Uses LLM-based analyzers with Gemini
    */
   private async analyzeArticles(
-    articles: unknown[],
+    articles: NewsArticle[],
     domain: Domain
   ): Promise<Insight[]> {
-    // Placeholder implementation
-    // In real implementation, this would:
-    // 1. Use LLM (Claude, GPT, etc.) to analyze articles
-    // 2. Extract key information based on domain
-    // 3. Generate structured insights
-    // 4. Apply domain-specific analysis rules
-
-    console.log(`TODO: Implement ${domain} analysis for ${articles.length} articles`);
-    return [];
+    if (domain === 'economy') {
+      const analyzer = new LLMEconomyAnalyzer(this.geminiApiKey);
+      return analyzer.analyze(articles);
+    } else {
+      const analyzer = new LLMITAnalyzer(this.geminiApiKey);
+      return analyzer.analyze(articles);
+    }
   }
 }

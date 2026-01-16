@@ -54,6 +54,32 @@ src/
 
 ---
 
+## 🚀 Deployment
+
+### GitHub Actions로 자동 실행
+
+이 프로젝트는 GitHub Actions를 통해 매일 자동으로 실행됩니다.
+
+**상세 배포 가이드: [DEPLOYMENT.md](DEPLOYMENT.md)**
+
+#### 빠른 시작
+1. GitHub Repository에 코드 푸시
+2. Repository Settings → Secrets에 API 키 등록
+3. 매일 자동 실행 (오전 8시, 오후 8시 KST)
+
+#### 필수 GitHub Secrets
+- `NOTION_API_KEY`
+- `NOTION_DATABASE_ID`
+- `KAKAO_REST_API_KEY`
+- `KAKAO_ACCESS_TOKEN`
+- `NAVER_CLIENT_ID`
+- `NAVER_CLIENT_SECRET`
+- `GEMINI_API_KEY`
+
+자세한 내용은 [DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요.
+
+---
+
 ## Setup
 
 ### 1. Install Dependencies

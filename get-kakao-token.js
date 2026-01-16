@@ -5,15 +5,16 @@
  * node get-kakao-token.js
  */
 
-const readline = require('readline');
+import 'dotenv/config';
+import readline from 'readline';
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-// .env.example에서 REST API Key 읽기
-const apiKey = 'c8b91e8d03c8634930d33313240ff888';
+// .env에서 REST API Key 읽기
+const apiKey = process.env.KAKAO_REST_API_KEY || 'your_kakao_rest_api_key';
 
 console.log('='.repeat(60));
 console.log('카카오 Access Token 발급 도우미');

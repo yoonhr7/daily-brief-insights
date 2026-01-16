@@ -24,13 +24,25 @@ export class NotionInsightRepository implements InsightRepository {
 
   async save(insight: Insight): Promise<void> {
     try {
+      console.log('[Notion] Preparing to save insight:', insight.title);
+      const properties = this.mapInsightToProperties(insight);
+      console.log('[Notion] Mapped properties:', JSON.stringify(properties, null, 2));
+
       await this.client.pages.create({
         parent: { database_id: this.databaseId },
-        properties: this.mapInsightToProperties(insight) as any,
+        properties: properties as any,
       });
+
+      console.log('[Notion] Successfully created page');
     } catch (error) {
-      console.error('Failed to save insight to Notion:', error);
-      throw new Error('Failed to save insight to Notion');
+      console.error('[Notion] Failed to save insight to Notion:', error);
+      if (error instanceof Error) {
+        console.error('[Notion] Error message:', error.message);
+        console.error('[Notion] Error stack:', error.stack);
+      }
+      // Log the full error object for debugging
+      console.error('[Notion] Full error object:', JSON.stringify(error, null, 2));
+      throw error;
     }
   }
 
@@ -53,7 +65,7 @@ export class NotionInsightRepository implements InsightRepository {
    * Map Insight to Notion page properties
    */
   private mapInsightToProperties(insight: Insight): Record<string, unknown> {
-    const baseProperties = {
+    const baseProperties: Record<string, unknown> = {
       // Title property
       제목: {
         title: [
@@ -105,6 +117,19 @@ export class NotionInsightRepository implements InsightRepository {
         ],
       },
     };
+
+    // Add easy explanation if present
+    // NOTE: '쉬운설명' 속성이 Notion 데이터베이스에 있어야 합니다
+    // 속성 타입: Rich Text
+    if (insight.easyExplanation) {
+      baseProperties['쉬운설명'] = {
+        rich_text: [
+          {
+            text: { content: insight.easyExplanation },
+          },
+        ],
+      };
+    }
 
     // Add domain-specific properties
     if (isEconomyInsight(insight)) {

@@ -1,0 +1,63 @@
+name: Daily Brief Scheduler
+
+on:
+    # Scheduled runs (UTC time)
+    schedule:
+        # Morning: 8 AM KST = 11 PM UTC (previous day)
+        - cron: "0 23 * * *"
+        # Evening: 8 PM KST = 11 AM UTC
+        - cron: "0 11 * * *"
+
+    # Manual trigger
+    workflow_dispatch:
+
+jobs:
+    run-daily-brief:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build project
+              run: npm run build
+
+            - name: Run Daily Brief
+              env:
+                  # Notion Configuration
+                  NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+                  NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+
+                  # KakaoTalk Configuration
+                  KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+                  KAKAO_ACCESS_TOKEN: ${{ secrets.KAKAO_ACCESS_TOKEN }}
+
+                  # Google News Configuration
+                  GOOGLE_NEWS_LANGUAGE: ko
+                  GOOGLE_NEWS_COUNTRY: KR
+
+                  # Naver News API Configuration
+                  NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+                  NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+
+                  # Gemini API Configuration
+                  GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+                  # Schedule (not used in GitHub Actions but required by app)
+                  MORNING_SCHEDULE: "0 8 * * *"
+                  EVENING_SCHEDULE: "0 20 * * *"
+              run: npm start -- --now
+
+            - name: Send notification on failure
+              if: failure()
+              run: |
+                  echo "Daily Brief execution failed. Please check the logs."
