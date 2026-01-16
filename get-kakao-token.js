@@ -60,11 +60,26 @@ rl.question('인가 코드를 입력하세요: ', async (code) => {
       console.log('Access Token:');
       console.log(data.access_token);
       console.log('='.repeat(60));
+
+      if (data.refresh_token) {
+        console.log('\n='.repeat(60));
+        console.log('Refresh Token (중요!):');
+        console.log(data.refresh_token);
+        console.log('='.repeat(60));
+      }
+
       console.log('\n📝 .env 파일에 다음과 같이 추가하세요:\n');
       console.log(`KAKAO_ACCESS_TOKEN=${data.access_token}`);
+      if (data.refresh_token) {
+        console.log(`KAKAO_REFRESH_TOKEN=${data.refresh_token}`);
+      }
+
       console.log('\n💡 참고:');
-      console.log(`  - 유효 기간: ${Math.floor(data.expires_in / 3600)}시간`);
-      console.log(`  - 만료 후 이 스크립트를 다시 실행하세요`);
+      console.log(`  - Access Token 유효 기간: ${Math.floor(data.expires_in / 3600)}시간`);
+      if (data.refresh_token) {
+        console.log(`  - Refresh Token 유효 기간: ${Math.floor(data.refresh_token_expires_in / 86400)}일`);
+        console.log(`  - Refresh Token으로 자동 갱신 가능! (매일 자동 알림 가능)`);
+      }
     }
   } catch (error) {
     console.error('❌ 네트워크 에러:', error.message);

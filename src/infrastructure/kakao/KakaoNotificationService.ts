@@ -7,9 +7,23 @@ import type { NotificationService } from '../../domain/shared/repositories.js';
 import type { Insight } from '../../domain/shared/insight.js';
 import { isEconomyInsight, isITInsight } from '../../domain/shared/insight.js';
 
+type KakaoTokenResponse = {
+  access_token: string;
+  token_type: string;
+  refresh_token?: string;
+  expires_in: number;
+  refresh_token_expires_in?: number;
+};
+
+type KakaoErrorResponse = {
+  error: string;
+  error_description: string;
+};
+
 type KakaoConfig = {
   restApiKey: string;
   accessToken: string;
+  refreshToken: string;
 };
 
 export class KakaoNotificationService implements NotificationService {
@@ -22,7 +36,23 @@ export class KakaoNotificationService implements NotificationService {
 
   async send(insight: Insight): Promise<void> {
     const message = this.formatInsightMessage(insight);
+    await this._request(message);
+  }
 
+  async sendBatch(insights: Insight[]): Promise<void> {
+    const summary = this.formatBatchMessage(insights);
+    await this._request(summary);
+  }
+
+  /**
+   * General request method with token refresh logic
+   * @param templateObject The message template object to send
+   * @param retryCount Internal counter for retries
+   */
+  private async _request(
+    templateObject: Record<string, unknown>,
+    retryCount = 0
+  ): Promise<void> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
@@ -31,12 +61,23 @@ export class KakaoNotificationService implements NotificationService {
           Authorization: `Bearer ${this.config.accessToken}`,
         },
         body: new URLSearchParams({
-          template_object: JSON.stringify(message),
+          template_object: JSON.stringify(templateObject),
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`KakaoTalk API error: ${response.statusText}`);
+        // If unauthorized and it's the first attempt, try to refresh token
+        if (response.status === 401 && retryCount === 0) {
+          console.log(
+            '[KakaoNotificationService] Access token expired, attempting to refresh...'
+          );
+          await this._refreshToken();
+          // Retry the request with the new token
+          return this._request(templateObject, retryCount + 1);
+        }
+        throw new Error(
+          `KakaoTalk API error: ${response.status} ${response.statusText}`
+        );
       }
     } catch (error) {
       console.error('Failed to send KakaoTalk message:', error);
@@ -44,28 +85,44 @@ export class KakaoNotificationService implements NotificationService {
     }
   }
 
-  async sendBatch(insights: Insight[]): Promise<void> {
-    // Send one summary message with all insights
-    const summary = this.formatBatchMessage(insights);
-
+  /**
+   * Refresh the KakaoTalk access token using the refresh token
+   */
+  private async _refreshToken(): Promise<void> {
     try {
-      const response = await fetch(this.apiUrl, {
+      const response = await fetch('https://kauth.kakao.com/oauth/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Bearer ${this.config.accessToken}`,
         },
         body: new URLSearchParams({
-          template_object: JSON.stringify(summary),
+          grant_type: 'refresh_token',
+          client_id: this.config.restApiKey,
+          refresh_token: this.config.refreshToken,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`KakaoTalk API error: ${response.statusText}`);
+        const errorData = (await response.json()) as KakaoErrorResponse;
+        throw new Error(
+          `Failed to refresh KakaoTalk token: ${response.status} ${response.statusText} - ${errorData.error_description}`
+        );
+      }
+
+      const data = (await response.json()) as KakaoTokenResponse;
+      this.config.accessToken = data.access_token;
+      console.log('[KakaoNotificationService] Access token refreshed successfully.');
+
+      // If Kakao returns a new refresh token (rotating refresh token), update it
+      if (data.refresh_token) {
+        this.config.refreshToken = data.refresh_token;
+        console.log(
+          '[KakaoNotificationService] Refresh token updated successfully.'
+        );
       }
     } catch (error) {
-      console.error('Failed to send KakaoTalk batch message:', error);
-      throw new Error('Failed to send KakaoTalk batch notification');
+      console.error('Error refreshing KakaoTalk token:', error);
+      throw new Error('Failed to refresh KakaoTalk access token');
     }
   }
 
@@ -145,14 +202,18 @@ export class KakaoNotificationService implements NotificationService {
   static fromEnv(): KakaoNotificationService {
     const restApiKey = process.env['KAKAO_REST_API_KEY'];
     const accessToken = process.env['KAKAO_ACCESS_TOKEN'];
+    const refreshToken = process.env['KAKAO_REFRESH_TOKEN'];
 
-    if (!restApiKey || !accessToken) {
-      throw new Error('KAKAO_REST_API_KEY and KAKAO_ACCESS_TOKEN must be set');
+    if (!restApiKey || !accessToken || !refreshToken) {
+      throw new Error(
+        'KAKAO_REST_API_KEY, KAKAO_ACCESS_TOKEN, and KAKAO_REFRESH_TOKEN must be set'
+      );
     }
 
     return new KakaoNotificationService({
       restApiKey,
       accessToken,
+      refreshToken,
     });
   }
 }
