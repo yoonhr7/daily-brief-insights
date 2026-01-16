@@ -31,6 +31,19 @@ jobs:
             - name: Build project
               run: npm run build
 
+            - name: Verify environment variables
+              run: |
+                  echo "Checking if secrets are set..."
+                  if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+                    echo "❌ OPENAI_API_KEY is not set"
+                    exit 1
+                  fi
+                  if [ -z "${{ secrets.NOTION_API_KEY }}" ]; then
+                    echo "❌ NOTION_API_KEY is not set"
+                    exit 1
+                  fi
+                  echo "✅ Required secrets are set"
+
             - name: Run Daily Brief
               env:
                   # Notion Configuration
