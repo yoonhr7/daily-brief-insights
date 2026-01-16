@@ -69,9 +69,14 @@ export class AnalyzeNewsUseCase {
     }
     console.log(`[${domain}] Saved ${insights.length} insights to Notion`);
 
-    // Step 4: Send batch notification via KakaoTalk
-    await this.notificationService.sendBatch(insights);
-    console.log(`[${domain}] Sent notification to KakaoTalk`);
+    // Step 4: Send batch notification via KakaoTalk (optional)
+    try {
+      await this.notificationService.sendBatch(insights);
+      console.log(`[${domain}] ✓ Sent notification to KakaoTalk`);
+    } catch (error) {
+      console.warn(`[${domain}] ⚠️  Failed to send KakaoTalk notification (continuing anyway):`, error instanceof Error ? error.message : error);
+      console.warn(`[${domain}] Note: You may need to refresh your Kakao Access Token`);
+    }
 
     console.log(`[${domain}] Analysis completed successfully`);
   }
